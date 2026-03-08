@@ -1,12 +1,9 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter
 
-from service.student_service import list_students
-from data.database import get_db
-from model.student_schema import Student
+from web.student_routes import router as student_router
+from web.product_routes import router as product_router
 
-router = APIRouter()
+router = APIRouter(prefix="/api/v1")
 
-@router.get("/students", response_model=list[Student]) #list[StudentORM] -> list[Student] -> json
-def get_students(db: Session = Depends(get_db)):
-    return list_students(db)
+router.include_router(student_router)
+router.include_router(product_router)
