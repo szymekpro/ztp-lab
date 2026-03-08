@@ -1,0 +1,17 @@
+services:
+  postgres:
+    build:
+      context: ./db
+      dockerfile: Dockerfile
+    container_name: postgres_ztp_project1
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
