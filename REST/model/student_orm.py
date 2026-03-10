@@ -1,7 +1,8 @@
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Integer, String, ForeignKey
 
 from data.database import Base
+from model.field_of_study_orm import FieldOfStudyORM
 
 
 class StudentORM(Base):
@@ -10,3 +11,9 @@ class StudentORM(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String)
     lastname: Mapped[str] = mapped_column(String)
+    student_code: Mapped[str] = mapped_column(String, unique=True)
+    email: Mapped[str] = mapped_column(String, unique=True)
+    field_of_study_id: Mapped[int] = mapped_column(ForeignKey("fields_of_study.id"))
+    ects_points: Mapped[int] = mapped_column(Integer)
+
+    field_of_study = relationship("FieldOfStudyORM")

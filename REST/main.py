@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from web.routes import router
 
-app = FastAPI(title="Laboratorium 1 - REST API")
+app = FastAPI(title="Laboratorium 2 - CRUD")
 app.include_router(router)
 
 if __name__ == "__main__":
