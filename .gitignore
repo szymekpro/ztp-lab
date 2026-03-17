@@ -6,3 +6,6 @@ ENV/
 # Pliki tymczasowe Pythona
 __pycache__/
 *.pyc
+
+# Pliki środowiskowe
+.env
