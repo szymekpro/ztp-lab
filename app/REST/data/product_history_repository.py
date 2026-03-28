@@ -8,7 +8,9 @@ def get_product_history_by_product_id(db: Session, product_id: int):
     query = (
         select(ProductHistoryORM)
         .where(ProductHistoryORM.product_id == product_id)
-        .order_by(desc(ProductHistoryORM.changed_at), desc(ProductHistoryORM.id))
+        .order_by(
+            desc(ProductHistoryORM.changed_at), 
+            desc(ProductHistoryORM.id))
     )
     result = db.execute(query)
     return result.scalars().all()
