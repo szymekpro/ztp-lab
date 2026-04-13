@@ -9,11 +9,12 @@ from app.notifications.model.notification_schema import (
 )
 from app.notifications.service.notification_service import (
     create_notification,
+    execute_notification,
     get_notification_or_raise,
     list_notifications,
     update_notification_status,
 )
-
+from app.notifications.service.notification_worker import process_ready_notifications
 
 router = APIRouter(tags=["Notifications"])
 
@@ -31,7 +32,7 @@ def create_notification_endpoint(
         return create_notification(db, notification)
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         ) from exc
 
@@ -79,6 +80,38 @@ def update_notification_status_endpoint(
         ) from exc
     except ValueError as exc:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=str(exc),
         ) from exc
+
+
+@router.post(
+    "/notifications/{notification_id}/send-now",
+    response_model=NotificationResponse,
+    status_code=status.HTTP_200_OK,
+)
+def send_notification_now_endpoint(
+    notification_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return execute_notification(db, notification_id)
+    except LookupError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from exc
+
+
+@router.post(
+    "/notifications/process-ready",
+    status_code=status.HTTP_200_OK,
+)
+def process_ready_notifications_endpoint(db: Session = Depends(get_db)):
+    processed = process_ready_notifications(db)
+    return {"processed_count": processed}

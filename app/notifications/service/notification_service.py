@@ -9,6 +9,7 @@ from app.notifications.data.notification_repository import (
 from app.notifications.model.notification_orm import NotificationORM
 from app.notifications.model.notification_schema import NotificationCreate
 from app.notifications.model.notification_status import NotificationStatus
+from app.notifications.service.notification_dispatcher import dispatch_notification
 from app.notifications.service.notification_state_machine import can_transition
 from app.notifications.service.notification_validators import (
     convert_to_utc,
@@ -48,10 +49,8 @@ def list_notifications(db: Session) -> list[NotificationORM]:
 
 def get_notification_or_raise(db: Session, notification_id: int) -> NotificationORM:
     notification = get_notification_by_id(db, notification_id)
-
     if notification is None:
         raise LookupError("Powiadomienie nie zostało znalezione.")
-
     return notification
 
 
@@ -69,4 +68,27 @@ def update_notification_status(
         )
 
     notification.status = new_status.value
+    return save_notification(db, notification)
+
+
+def execute_notification(db: Session, notification_id: int) -> NotificationORM:
+    """
+    Wykonuje pojedyncze powiadomienie:
+    - pobiera rekord,
+    - sprawdza status,
+    - uruchamia właściwy kanał wykonania,
+    - aktualizuje status na SENT lub FAILED.
+    """
+    notification = get_notification_or_raise(db, notification_id)
+    current_status = NotificationStatus(notification.status)
+
+    if current_status != NotificationStatus.PENDING:
+        raise ValueError("Wykonać można wyłącznie powiadomienie w statusie PENDING.")
+
+    try:
+        dispatch_notification(notification)
+        notification.status = NotificationStatus.SENT.value
+    except Exception:
+        notification.status = NotificationStatus.FAILED.value
+
     return save_notification(db, notification)

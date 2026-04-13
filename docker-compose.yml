@@ -22,5 +22,19 @@ services:
     ports:
       - "8080:8080"
 
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog_ztp
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  ntfy:
+    image: binwiederhier/ntfy
+    container_name: ntfy_ztp
+    command: serve
+    ports:
+      - "8088:80"
+
 volumes:
   pgdata:

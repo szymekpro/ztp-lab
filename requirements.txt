@@ -6,4 +6,4 @@ pydantic[email]
 psycopg[binary]
 pytest
 httpx
-
+requests
