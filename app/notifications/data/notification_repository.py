@@ -41,3 +41,32 @@ def get_ready_notifications(db: Session) -> list[NotificationORM]:
         .order_by(NotificationORM.scheduled_at.asc())
         .all()
     )
+
+def get_notification_by_idempotency_key(
+    db: Session,
+    idempotency_key: str,
+) -> NotificationORM | None:
+    return (
+        db.query(NotificationORM)
+        .filter(NotificationORM.idempotency_key == idempotency_key)
+        .first()
+    )
+
+def count_notifications_by_status(db: Session, status_value: str) -> int:
+    return (
+        db.query(NotificationORM)
+        .filter(NotificationORM.status == status_value)
+        .count()
+    )
+
+def count_notifications_by_status_and_channel(
+    db: Session,
+    status_value: str,
+    channel_value: str,
+    ) -> int:
+    return (
+        db.query(NotificationORM)
+        .filter(NotificationORM.status == status_value)
+        .filter(NotificationORM.channel == channel_value)
+        .count()
+    )

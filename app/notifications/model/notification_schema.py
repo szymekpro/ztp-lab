@@ -27,6 +27,7 @@ class NotificationResponse(BaseModel):
     timezone: str
     status: NotificationStatus
     created_at: datetime
+    idempotency_key: str
 
     model_config = {
         "from_attributes": True

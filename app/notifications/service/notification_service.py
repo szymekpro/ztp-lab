@@ -1,3 +1,5 @@
+import secrets
+
 from sqlalchemy.orm import Session
 
 from app.notifications.data.notification_repository import (
@@ -20,6 +22,10 @@ from app.notifications.service.notification_validators import (
 )
 
 
+def generate_idempotency_key() -> str:
+    return f"notif_{secrets.token_urlsafe(24)}"
+
+
 def create_notification(db: Session, notification_data: NotificationCreate) -> NotificationORM:
     validate_content(notification_data.content)
     validate_recipient(notification_data.recipient)
@@ -38,6 +44,7 @@ def create_notification(db: Session, notification_data: NotificationCreate) -> N
         scheduled_at=scheduled_at_utc,
         timezone=notification_data.timezone,
         status=NotificationStatus.PENDING.value,
+        idempotency_key=generate_idempotency_key(),
     )
 
     return add_notification(db, notification)
@@ -91,4 +98,15 @@ def execute_notification(db: Session, notification_id: int) -> NotificationORM:
     except Exception:
         notification.status = NotificationStatus.FAILED.value
 
+    return save_notification(db, notification)
+
+
+def cancel_notification(db: Session, notification_id: int) -> NotificationORM:
+    notification = get_notification_or_raise(db, notification_id)
+    current_status = NotificationStatus(notification.status)
+
+    if current_status != NotificationStatus.PENDING:
+        raise ValueError("Anulować można wyłącznie powiadomienie w statusie PENDING.")
+
+    notification.status = NotificationStatus.CANCELLED.value
     return save_notification(db, notification)

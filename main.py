@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Laboratorium 5 - Powiadomienia",
+    title="Laboratorium 6 - Powiadomienia",
     lifespan=lifespan,
 )
 
