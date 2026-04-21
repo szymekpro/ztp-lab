@@ -37,5 +37,13 @@ services:
     ports:
       - "9090:9090"
 
+  adminer:
+    image: adminer
+    container_name: adminer_ztp
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
 volumes:
   pgdata:
