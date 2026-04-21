@@ -8,7 +8,6 @@ from app.notifications.service.notification_worker import run_worker
 from app.notifications.web.routes import router as notifications_router
 
 from app.REST.product_docs_app import products_docs_app
-from app.REST.student_docs_app import students_docs_app
 from app.notifications.docs_app import notifications_docs_app
 
 @asynccontextmanager
@@ -26,7 +25,6 @@ app = FastAPI(
 app.include_router(router)
 app.include_router(notifications_router, prefix="/api/v1")
 
-app.mount("/students-docs", students_docs_app)
 app.mount("/products-docs", products_docs_app)
 app.mount("/notifications-docs", notifications_docs_app)
 

@@ -52,7 +52,7 @@ def validate_quantity_non_negative(quantity: int):
     if quantity < 0:
         raise ValidationError("Ilość dostępnych sztuk nie może być ujemna.")
 
-# case insensitive ?
+
 def validate_product_name_forbidden_phrases(db, name: str):
     phrases = get_forbidden_product_phrases(db)
     name_lower = name.lower()

@@ -58,16 +58,6 @@ def client(db_session):
 
 
 @pytest.fixture
-def unique_student_code() -> str:
-    """
-    Generuje unikalny student_code zgodny z walidacją długości 5-10 znaków.
-    Nie używamy już prefiksu do późniejszego czyszczenia danych,
-    ponieważ dane są cofane rollbackiem.
-    """
-    return uuid.uuid4().hex[:10].upper()
-
-
-@pytest.fixture
 def unique_product_name() -> str:
     """Generuje unikalną nazwę produktu zgodną z walidacją (3-20, alnum)."""
     return f"PR{uuid.uuid4().hex[:8]}".upper()
