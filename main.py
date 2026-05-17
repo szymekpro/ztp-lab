@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 from threading import Thread
 
 from fastapi import FastAPI
-from uvicorn import lifespan
 from app.notifications.service.notification_worker import run_worker
 
 from app.REST.web.routes import router

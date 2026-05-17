@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Path, status
 from sqlalchemy.orm import Session
 
 from app.REST.data.database import get_db
@@ -20,13 +20,14 @@ from app.cart.service.cart_exceptions import (
 from app.cart.service.cart_service import (
     add_product_to_cart,
     get_current_cart,
-    get_order_details,
-    list_orders,
     remove_product_from_cart,
     update_cart_item,
 )
 from app.cart.service.checkout_command import CheckoutCommand
 from app.cart.service.checkout_handler import handle_checkout
+from app.cart.service.order_query_service import get_order_details, list_orders
+from app.cart.service.complete_order_command import CompleteOrderCommand
+from app.cart.service.complete_order_handler import handle_complete_order
 
 
 router = APIRouter(
@@ -189,3 +190,38 @@ def get_order_details_endpoint(
 
     except CartNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@orders_router.post(
+    "/{order_id}/complete",
+    response_model=OrderResponse,
+    status_code=status.HTTP_200_OK,
+)
+def complete_order_endpoint(
+    order_id: int = Path(..., gt=0),
+    idempotency_key: str = Header(..., alias="Idempotency-Key"),
+    operator: OperatorORM = Depends(get_current_operator_dependency),
+    db: Session = Depends(get_db),
+):
+    command = CompleteOrderCommand(
+        operator_id=operator.id,
+        order_id=order_id,
+        idempotency_key=idempotency_key,
+        completed_by=operator.email,
+        source="API",
+        notify_email=True,
+        notify_push=True,
+        note="Zamówienie zakończone przez operatora.",
+    )
+
+    try:
+        return handle_complete_order(
+            db=db,
+            command=command,
+        )
+
+    except CartNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    except CartValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))

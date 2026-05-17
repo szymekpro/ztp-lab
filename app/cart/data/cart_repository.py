@@ -5,6 +5,7 @@ from app.cart.model.cart_draft_item_orm import CartDraftItemORM
 from app.cart.model.cart_draft_orm import CartDraftORM
 from app.cart.model.order_item_orm import OrderItemORM
 from app.cart.model.order_orm import OrderORM
+from app.cart.model.processed_command_orm import ProcessedCommandORM
 
 
 def get_cart_by_operator_id(
@@ -166,3 +167,55 @@ def get_order_by_id_and_operator_id(
     )
     result = db.execute(query)
     return result.scalars().first()
+
+
+def save_order(
+    db: Session,
+    order: OrderORM,
+) -> OrderORM:
+    db.add(order)
+    db.commit()
+    db.refresh(order)
+    return order
+
+
+def get_processed_command(
+    db: Session,
+    command_name: str,
+    idempotency_key: str,
+) -> ProcessedCommandORM | None:
+    query = select(ProcessedCommandORM).where(
+        ProcessedCommandORM.command_name == command_name,
+        ProcessedCommandORM.idempotency_key == idempotency_key,
+    )
+    result = db.execute(query)
+    return result.scalars().first()
+
+
+def add_processed_command(
+    db: Session,
+    command_name: str,
+    idempotency_key: str,
+    operator_id: int,
+) -> ProcessedCommandORM:
+    processed_command = ProcessedCommandORM(
+        command_name=command_name,
+        idempotency_key=idempotency_key,
+        operator_id=operator_id,
+    )
+    db.add(processed_command)
+    db.commit()
+    db.refresh(processed_command)
+    return processed_command
+
+
+def is_command_already_processed(
+    db: Session,
+    command_name: str,
+    idempotency_key: str,
+) -> bool:
+    return get_processed_command(
+        db=db,
+        command_name=command_name,
+        idempotency_key=idempotency_key,
+    ) is not None
