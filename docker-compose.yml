@@ -15,6 +15,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  adminer:
+    image: adminer
+    container_name: adminer_ztp
+    restart: always
+    ports:
+      - "8082:8080"
+      
   mailhog:
     image: mailhog/mailhog
     container_name: mailhog_ztp
@@ -28,22 +35,6 @@ services:
     command: serve
     ports:
       - "8088:80"
-
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus_ztp
-    volumes:
-      - ./.config/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-
-  adminer:
-    image: adminer
-    container_name: adminer_ztp
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
 
 volumes:
   pgdata:
