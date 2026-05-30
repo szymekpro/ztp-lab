@@ -25,6 +25,7 @@ from app.cart.service.cart_service import (
 )
 from app.cart.service.checkout_command import CheckoutCommand
 from app.cart.service.checkout_handler import handle_checkout
+from app.cart.service.dashboard_query_service import get_dashboard_summary
 from app.cart.service.order_query_service import get_order_details, list_orders
 from app.cart.service.complete_order_command import CompleteOrderCommand
 from app.cart.service.complete_order_handler import handle_complete_order
@@ -169,6 +170,20 @@ def list_orders_endpoint(
     db: Session = Depends(get_db),
 ):
     return list_orders(db=db, operator_id=operator.id)
+
+
+@orders_router.get(
+    "/dashboard/summary",
+    status_code=status.HTTP_200_OK,
+)
+def get_dashboard_summary_endpoint(
+    operator: OperatorORM = Depends(get_current_operator_dependency),
+    db: Session = Depends(get_db),
+):
+    return get_dashboard_summary(
+        db=db,
+        operator_id=operator.id,
+    )
 
 
 @orders_router.get(

@@ -21,6 +21,7 @@ function Navbar() {
         <Link to="/dashboard">Dashboard</Link>
         <Link to="/products">Produkty</Link>
         <Link to="/cart">Koszyk</Link>
+        <Link to="/orders">Zamówienia</Link>
       </div>
 
       <button onClick={handleLogout}>

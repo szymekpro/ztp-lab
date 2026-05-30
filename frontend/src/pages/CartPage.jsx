@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { apiDelete, apiGet, apiPost } from "../api/client";
 import Navbar from "../components/Navbar";
@@ -6,6 +7,7 @@ import useCurrentOperator from "../hooks/useCurrentOperator";
 
 function CartPage() {
   const { authLoading, authError } = useCurrentOperator();
+  const navigate = useNavigate();
 
   const [cart, setCart] = useState(null);
   const [message, setMessage] = useState("");
@@ -68,7 +70,7 @@ function CartPage() {
     try {
       await apiPost("/api/v1/cart/checkout");
       setMessage("Zamówienie zostało złożone.");
-      await loadCart();
+      navigate("/orders");
     } catch (err) {
       setError(err.message);
     }
