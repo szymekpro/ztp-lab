@@ -2,6 +2,9 @@
 import { useNavigate } from "react-router-dom";
 
 import { apiDelete, apiGet, apiPost } from "../api/client";
+import EmptyState from "../components/EmptyState";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import Navbar from "../components/Navbar";
 import useCurrentOperator from "../hooks/useCurrentOperator";
 
@@ -80,7 +83,7 @@ function CartPage() {
     return (
       <main className="page">
         <section className="card">
-          <p>Sprawdzanie sesji...</p>
+          <LoadingState message="Sprawdzanie sesji..." />
         </section>
       </main>
     );
@@ -98,9 +101,9 @@ function CartPage() {
         <section className="card wide-card">
           <h1>Koszyk</h1>
 
-          {loading && <p>Ladowanie koszyka...</p>}
+          {loading && <LoadingState message="Ładowanie koszyka..." />}
 
-          {error && <p className="error">{error}</p>}
+          {error && <ErrorState message={error} />}
 
           {message && <p className="success">{message}</p>}
 
@@ -125,7 +128,10 @@ function CartPage() {
               </div>
 
               {cart.items.length === 0 ? (
-                <p>Koszyk jest pusty.</p>
+                <EmptyState
+                  title="Koszyk jest pusty."
+                  description="Przejdź do produktów i dodaj coś do koszyka."
+                />
               ) : (
                 <div className="product-list">
                   {cart.items.map((item) => (

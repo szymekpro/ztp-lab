@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { apiGet, apiRequest } from "../api/client";
+import EmptyState from "../components/EmptyState";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import Navbar from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
 import useCurrentOperator from "../hooks/useCurrentOperator";
@@ -18,6 +21,7 @@ function OrderDetailsPage() {
 
   const [loading, setLoading] = useState(true);
   const [completeLoading, setCompleteLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   async function loadOrderDetails() {
     setLoadError("");
@@ -60,11 +64,38 @@ function OrderDetailsPage() {
     }
   }
 
+  async function handleCancelOrder() {
+    const confirmed = window.confirm(
+      "Czy na pewno chcesz anulować to zamówienie?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setActionError("");
+    setSuccessMessage("");
+    setCancelLoading(true);
+
+    try {
+      await apiRequest(`/api/v1/orders/${orderId}/cancel`, {
+        method: "POST",
+      });
+
+      setSuccessMessage("Zamówienie zostało anulowane.");
+      await loadOrderDetails();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setCancelLoading(false);
+    }
+  }
+
   if (authLoading) {
     return (
       <main className="page">
         <section className="card">
-          <p>Sprawdzanie sesji...</p>
+          <LoadingState message="Sprawdzanie sesji..." />
         </section>
       </main>
     );
@@ -73,6 +104,8 @@ function OrderDetailsPage() {
   if (authError) {
     return null;
   }
+
+  const isActionLoading = completeLoading || cancelLoading;
 
   return (
     <>
@@ -87,22 +120,12 @@ function OrderDetailsPage() {
           <h1>Szczegóły zamówienia</h1>
 
           {loading && (
-            <div className="state-box">
-              <p>Ładowanie szczegółów zamówienia...</p>
-            </div>
+            <LoadingState message="Ładowanie szczegółów zamówienia..." />
           )}
 
-          {loadError && (
-            <div className="state-box error-box">
-              <p>{loadError}</p>
-            </div>
-          )}
+          {loadError && <ErrorState message={loadError} />}
 
-          {actionError && (
-            <div className="state-box error-box">
-              <p>{actionError}</p>
-            </div>
-          )}
+          {actionError && <ErrorState message={actionError} />}
 
           {successMessage && (
             <div className="state-box success-box">
@@ -134,28 +157,35 @@ function OrderDetailsPage() {
               {order.status === "PENDING" ? (
                 <div className="actions-bar">
                   <button
-                    disabled={completeLoading}
+                    disabled={isActionLoading}
                     onClick={handleCompleteOrder}
                   >
                     {completeLoading
                       ? "Finalizowanie zamówienia..."
                       : "Sfinalizuj zamówienie"}
                   </button>
+
+                  <button
+                    disabled={isActionLoading}
+                    onClick={handleCancelOrder}
+                  >
+                    {cancelLoading
+                      ? "Anulowanie..."
+                      : "Anuluj zamówienie"}
+                  </button>
                 </div>
               ) : (
                 <div className="info-box">
                   <p>
                     To zamówienie ma status{" "}
-                    <strong>{order.status}</strong> i nie może zostać
-                    ponownie sfinalizowane.
+                    <strong>{order.status}</strong> i nie można wykonać na nim
+                    kolejnej operacji zmiany statusu.
                   </p>
                 </div>
               )}
 
               {order.items.length === 0 ? (
-                <div className="empty-state">
-                  <p>Brak produktów w zamówieniu.</p>
-                </div>
+                <EmptyState title="Brak produktów w zamówieniu." />
               ) : (
                 <div className="order-product-list">
                   {order.items.map((item) => (

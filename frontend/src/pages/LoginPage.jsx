@@ -11,10 +11,36 @@ function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  function validateForm() {
+    if (!email.trim()) {
+      return "Email jest wymagany.";
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+
+    if (!emailRegex.test(email)) {
+      return "Niepoprawny adres email.";
+    }
+
+    if (!password.trim()) {
+      return "Hasło jest wymagane.";
+    }
+
+    return null;
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
     setError("");
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
 
     try {

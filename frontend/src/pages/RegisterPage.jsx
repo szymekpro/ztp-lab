@@ -17,10 +17,60 @@ function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  function validateForm() {
+    if (!firstName.trim()) {
+      return "Imię jest wymagane.";
+    }
+
+    if (!lastName.trim()) {
+      return "Nazwisko jest wymagane.";
+    }
+
+    if (!email.trim()) {
+      return "Email jest wymagany.";
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+
+    if (!emailRegex.test(email)) {
+      return "Niepoprawny adres email.";
+    }
+
+    if (password.length < 8) {
+      return "Hasło musi mieć co najmniej 8 znaków.";
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      return "Hasło musi zawierać co najmniej jedną wielką literę.";
+    }
+
+    if (!/\d/.test(password)) {
+      return "Hasło musi zawierać co najmniej jedną cyfrę.";
+    }
+
+    if (!/[!@#$%^&*()_\-+=\[{\]};:'",<.>/?\\|`~]/.test(password)) {
+      return "Hasło musi zawierać co najmniej jeden znak specjalny.";
+    }
+
+    if (password !== confirmPassword) {
+      return "Hasła nie są identyczne.";
+    }
+
+    return null;
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
     setError("");
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
 
     try {

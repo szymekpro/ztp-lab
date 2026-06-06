@@ -29,6 +29,8 @@ from app.cart.service.dashboard_query_service import get_dashboard_summary
 from app.cart.service.order_query_service import get_order_details, list_orders
 from app.cart.service.complete_order_command import CompleteOrderCommand
 from app.cart.service.complete_order_handler import handle_complete_order
+from app.cart.service.cancel_order_command import CancelOrderCommand
+from app.cart.service.cancel_order_handler import handle_cancel_order
 
 
 router = APIRouter(
@@ -231,6 +233,35 @@ def complete_order_endpoint(
 
     try:
         return handle_complete_order(
+            db=db,
+            command=command,
+        )
+
+    except CartNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    except CartValidationError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@orders_router.post(
+    "/{order_id}/cancel",
+    response_model=OrderResponse,
+    status_code=status.HTTP_200_OK,
+)
+def cancel_order_endpoint(
+    order_id: int = Path(..., gt=0),
+    operator: OperatorORM = Depends(get_current_operator_dependency),
+    db: Session = Depends(get_db),
+):
+    command = CancelOrderCommand(
+        operator_id=operator.id,
+        order_id=order_id,
+        reason="Zamówienie anulowane przez operatora.",
+    )
+
+    try:
+        return handle_cancel_order(
             db=db,
             command=command,
         )

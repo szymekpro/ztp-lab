@@ -18,7 +18,9 @@ W ramach Projektu 3 do istniejącej aplikacji backendowej dodane zostały dwa no
 - `app/identity/model/` - modele ORM (`OperatorORM`, `OperatorSessionORM`) oraz schematy Pydantic (`auth_schema.py`),
 - `app/identity/data/` - repozytoria (`operator_repository.py`, `operator_session_repository.py`),
 - `app/identity/service/` - logika biznesowa (`auth_service.py`, `password_hasher.py`, `auth_validators.py`, `auth_exceptions.py`),
-- `app/identity/web/` - endpointy HTTP (`routes.py`).
+- `app/identity/web/` - endpointy HTTP (`routes.py`). 
+
+•	identity → cart - moduł koszyka identyfikuje aktualnie zalogowanego operatora wyłącznie na podstawie ciasteczka auth_token. W każdym endpointcie modułu cart używana jest zależność get_current_operator_dependency, która wykorzystuje funkcję get_current_operator z modułu identity. Klucz operator_id jest następnie używany jako klucz obcy w tabelach cart_drafts, orders oraz processed_commands. Bez aktywnej sesji moduł cart zwraca błąd 401.
 
 Moduł posiada również własną podstronę z dokumentacją Swagger pod adresem `/identity-docs/` (`docs_app.py`).
 
@@ -184,6 +186,10 @@ def get_current_operator(db: Session, session_token: str) -> OperatorORM:
 ```
 
 Jeżeli od czasu ostatniego użycia (`last_used_at`) upłynęło więcej niż `SESSION_MAX_AGE_SECONDS`, sesja jest aktywnie usuwana z bazy, a klient otrzymuje odpowiedź 401.
+
+•	Po stronie serwera - przy każdym poprawnym wywołaniu get_current_operator aktualizowane jest pole last_used_at (update_session_last_used).
+•	Po stronie klienta - endpoint GET /auth/me ponownie ustawia ciasteczko auth_token z odświeżonym max_age, dzięki czemu cookie po stronie przeglądarki również jest przedłużane.
+
 
 #### Przedłużanie sesji (sliding session)
 

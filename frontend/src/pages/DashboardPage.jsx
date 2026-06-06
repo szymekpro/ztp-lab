@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiGet } from "../api/client";
+import EmptyState from "../components/EmptyState";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import Navbar from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
 import useCurrentOperator from "../hooks/useCurrentOperator";
@@ -34,7 +37,7 @@ function DashboardPage() {
     return (
       <main className="page">
         <section className="card">
-          <p>Ładowanie danych użytkownika...</p>
+          <LoadingState message="Ładowanie danych użytkownika..." />
         </section>
       </main>
     );
@@ -56,9 +59,11 @@ function DashboardPage() {
             Zalogowany operator: <strong>{operator.email}</strong>
           </p>
 
-          {summaryLoading && <p>Ładowanie podsumowania...</p>}
+          {summaryLoading && (
+            <LoadingState message="Ładowanie podsumowania..." />
+          )}
 
-          {summaryError && <p className="error">{summaryError}</p>}
+          {summaryError && <ErrorState message={summaryError} />}
 
           {!summaryLoading && !summaryError && summary && (
             <>
@@ -84,42 +89,52 @@ function DashboardPage() {
                 </div>
               </div>
 
-              <div className="last-assignment">
-                <h2>Ostatnie zamówienie</h2>
+              <div className="recent-orders">
+                <div className="recent-orders-header">
+                  <h2>Ostatnie zamówienia</h2>
 
-                {summary.last_order ? (
-                  <>
-                    <p>
-                      <strong>Numer:</strong>{" "}
-                      {summary.last_order.order_number}
-                    </p>
+                  <Link to="/orders" className="recent-orders-link">
+                    Zobacz wszystkie
+                  </Link>
+                </div>
 
-                    <p>
-                      <strong>Status:</strong>{" "}
-                      <StatusBadge status={summary.last_order.status} />
-                    </p>
-
-                    <p>
-                      <strong>Liczba produktów:</strong>{" "}
-                      {summary.last_order.items_count}
-                    </p>
-
-                    <p>
-                      <strong>Suma:</strong>{" "}
-                      {summary.last_order.total_price} zł
-                    </p>
-
-                    <Link to={`/orders/${summary.last_order.id}`}>
-                      Zobacz szczegóły
-                    </Link>
-                  </>
+                {summary.recent_orders.length === 0 ? (
+                  <EmptyState
+                    title="Brak zamówień."
+                    description="Złóż pierwsze zamówienie, aby zobaczyć je w dashboardzie."
+                  />
                 ) : (
-                  <div className="empty-state">
-                    <p>Nie utworzono jeszcze żadnego zamówienia.</p>
-                    <p>
-                      Przejdź do koszyka, dodaj produkty i złóż pierwsze
-                      zamówienie.
-                    </p>
+                  <div className="order-list">
+                    {summary.recent_orders.map((order, index) => (
+                      <article
+                        key={order.id}
+                        className={
+                          index === 0 ? "order-item order-item-latest" : "order-item"
+                        }
+                      >
+                        <div>
+                          <div className="order-item-title">
+                            <strong>{order.order_number}</strong>
+
+                            {index === 0 && (
+                              <span className="latest-tag">Najnowsze</span>
+                            )}
+                          </div>
+
+                          <p>Liczba produktów: {order.items_count}</p>
+
+                          <p>Suma: {order.total_price} zł</p>
+                        </div>
+
+                        <div className="order-actions">
+                          <StatusBadge status={order.status} />
+
+                          <Link to={`/orders/${order.id}`}>
+                            Szczegóły
+                          </Link>
+                        </div>
+                      </article>
+                    ))}
                   </div>
                 )}
               </div>

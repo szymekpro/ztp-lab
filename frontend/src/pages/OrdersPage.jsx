@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { apiGet } from "../api/client";
+import EmptyState from "../components/EmptyState";
+import ErrorState from "../components/ErrorState";
+import LoadingState from "../components/LoadingState";
 import Navbar from "../components/Navbar";
 import StatusBadge from "../components/StatusBadge";
 import useCurrentOperator from "../hooks/useCurrentOperator";
@@ -14,6 +17,8 @@ function OrdersPage() {
   const [loading, setLoading] = useState(true);
 
   async function loadOrders() {
+    setError("");
+
     try {
       const data = await apiGet("/api/v1/orders");
       setOrders(data);
@@ -34,7 +39,7 @@ function OrdersPage() {
     return (
       <main className="page">
         <section className="card">
-          <p>Sprawdzanie sesji...</p>
+          <LoadingState message="Sprawdzanie sesji..." />
         </section>
       </main>
     );
@@ -52,18 +57,15 @@ function OrdersPage() {
         <section className="card wide-card">
           <h1>Historia zamówień</h1>
 
-          {loading && <p>Ładowanie zamówień...</p>}
+          {loading && <LoadingState message="Ładowanie zamówień..." />}
 
-          {error && <p className="error">{error}</p>}
+          {error && <ErrorState message={error} />}
 
           {!loading && !error && orders.length === 0 && (
-            <div className="empty-state">
-              <p>Brak złożonych zamówień.</p>
-
-              <p>
-                Przejdź do koszyka, dodaj produkty i złóż zamówienie.
-              </p>
-            </div>
+            <EmptyState
+              title="Brak złożonych zamówień."
+              description="Przejdź do koszyka, dodaj produkty i złóż zamówienie."
+            />
           )}
 
           {!loading && !error && orders.length > 0 && (

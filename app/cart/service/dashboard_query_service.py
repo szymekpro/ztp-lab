@@ -33,10 +33,15 @@ def get_dashboard_summary(
         OrderListItemResponse.model_validate(last_order) if last_order else None
     )
 
+    recent_orders = [
+        OrderListItemResponse.model_validate(order) for order in orders[:5]
+    ]
+
     return {
         "total_orders": total_orders,
         "pending_orders": pending_orders,
         "completed_orders": completed_orders,
         "cancelled_orders": cancelled_orders,
         "last_order": last_order_payload,
+        "recent_orders": recent_orders,
     }
