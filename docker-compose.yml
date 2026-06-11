@@ -23,7 +23,7 @@ services:
       - "1025:1025"
 
   ntfy:
-    image: binwiederhier/ntfy
+    image: binwiederhier/ntfyappuser
     container_name: ntfy_ztp
     command: serve
     ports:
@@ -36,6 +36,14 @@ services:
       - ./.config/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+
+  adminer:
+    image: adminer
+    container_name: adminer_ztp
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
 
 volumes:
   pgdata:

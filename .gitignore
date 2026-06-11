@@ -9,3 +9,7 @@ __pycache__/
 
 # Pliki środowiskowe
 .env
+
+#Pliki serwisowe
+server.yml
+scripts/_send_ntfy.ps1
